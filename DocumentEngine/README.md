@@ -1,83 +1,148 @@
-# Offline Document Intelligence Engine
+# 🛡️ VaultOCR: Privacy-First Offline Document Intelligence Engine
 
-**A Production-Grade, Privacy-First OCR & Document Analysis System**
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![OCR](https://img.shields.io/badge/Engine-Tesseract_5-FF6F00?logo=tesseract&logoColor=white)](https://github.com/tesseract-ocr/tesseract)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-This engine processes document images entirely offline, using a layered architecture to extract text, layout structure, tables, and entities without sending a single byte to the cloud.
+**VaultOCR** is a production-ready, industrial-grade document analysis system designed for environments where **data privacy is non-negotiable**. Unlike cloud-based solutions, VaultOCR processes sensitive documents entirely on local hardware—ensuring no data ever leaves your infrastructure.
 
 ---
 
-## 🏗 Architecture
+## ✨ Key Features
 
-The system follows a strict 6-Layer Pipeline:
+-   🔒 **100% Offline Processing**: Zero external API calls. Privacy by design.
+-   🏎️ **High-Performance Pipeline**: Multi-layered architecture (Vision → OCR → NLP).
+-   📐 **Intelligent Layout Analysis**: Detects tables, headers, and structural blocks using advanced morphological operations.
+-   🧪 **Advanced Preprocessing**: Automated deskewing, noise reduction, and adaptive thresholding for poor-quality scans.
+-   🛠️ **Enterprise Integration**: Developer-friendly FastAPI endpoints with strict Pydantic validation.
+-   📊 **Interactive Dashboard**: Built-in Streamlit UI for real-time processing visualization.
 
-1.  **Ingestion Layer**: Validates and loads images safely.
-2.  **Vision Preprocessing**: Corrects skew (rotation), removes noise, and applies adaptive thresholding to handle scanned document artifacts.
-3.  **OCR Core**: Uses **Tesseract 5 LSTM** with a multi-pass strategy to extract text coordinates and structure.
-4.  **Layout Engine**: Uses Computer Vision (morphological operations) to detect tables and classify text blocks (Headers vs Paragraphs).
-5.  **Post-Processing**: Regex-based NLP to extract entities (Dates, Emails, Amounts) and normalize text.
-6.  **Serialization**: Exports data into a strict, versioned JSON schema using **Pydantic**.
+---
 
-## 🚀 Quick Start
+## 🏗️ Architecture & Pipeline
 
-### Prerequisites
-1.  **Python 3.10+**
-2.  **Tesseract OCR** must be installed on your system.
-    -   Windows: [Download Installer](https://github.com/UB-Mannheim/tesseract/wiki)
-    -   Ensure `tesseract.exe` is in your PATH or update `.env`.
+The system follows a strict **6-Layer Strategic Pipeline**:
 
-### Installation
+1.  **Ingestion Layer**: Secure validation and memory-safe loading of document images.
+2.  **Vision Preprocessing**: Skew correction (rotation), denoising, and contrast enhancement.
+3.  **OCR Core**: Multi-pass Tesseract 5 LSTM execution for granular character and coordinate extraction.
+4.  **Layout Engine**: Morphological analysis to group text into logical blocks (Headers, Paragraphs, Tables).
+5.  **Post-Processing (NLP)**: Regex-driven entity extraction (Dates, Emails, Currency) and text normalization.
+6.  **Serialization**: Structured JSON output mapped to strict versioned schemas.
 
-```bash
-# 1. Install Dependencies
-pip install -r requirements.txt
+---
 
-# 2. Check Configuration
-# Edit app/core/config.py if your Tesseract path is custom
+## 📂 Project Structure
+
+```text
+VaultOCR/
+├── app/
+│   ├── api/v1/         # API Endpoints (FastAPI)
+│   ├── core/           # Configuration & Logging
+│   ├── models/         # Pydantic Schemas (Request/Response)
+│   ├── services/       # Core Logic (OCR, Vision, NLP)
+│   │   ├── ingestion.py
+│   │   ├── layout_engine.py
+│   │   ├── ocr_service.py
+│   │   ├── pipeline.py
+│   │   ├── postprocessing.py
+│   │   └── preprocessing.py
+│   └── main.py         # Application Entrypoint
+├── ui/
+│   └── dashboard.py    # Streamlit Web Interface
+├── requirements.txt    # Project Dependencies
+└── setup_guide.md      # Detailed Installation Instructions
 ```
 
-### Running the System
+---
 
-You need two terminals (or run as background processes):
+## 🚀 Getting Started
 
-**Terminal 1: The Backend API**
+### 📦 Prerequisites
+
+1.  **Python 3.10+**
+2.  **Tesseract OCR 5.0+**: Ensure the binary is installed locally.
+    -   **Windows**: [Download UB Mannheim Installer](https://github.com/UB-Mannheim/tesseract/wiki)
+    -   **Linux**: `sudo apt install tesseract-ocr`
+    -   **Mac**: `brew install tesseract`
+
+### 🔧 Installation
+
 ```bash
-# From inside DocumentEngine directory
+# 1. Clone the repository
+git clone https://github.com/SAK-SHI14/VaultOCR.git
+cd VaultOCR
+
+# 2. Create and activate a virtual environment
+python -m venv venv
+# Windows:
+.\venv\Scripts\Activate.ps1
+# Unix:
+source venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+```
+
+### 🛰️ Running the System
+
+You can run the backend API and the frontend dashboard independently:
+
+#### 1. Start the API Gateway (FastAPI)
+```bash
 uvicorn app.main:app --reload
 ```
+-   **Documentation**: Visit `http://localhost:8000/docs` for the interactive Swagger UI.
 
-**Terminal 2: The Frontend UI**
+#### 2. Start the Analytics Dashboard (Streamlit)
 ```bash
 streamlit run ui/dashboard.py
 ```
+-   **URL**: Accessible at `http://localhost:8501`.
 
 ---
 
-## 🔌 API Usage
+## 🔌 API Documentation
 
-**POST** `/api/v1/process`
--   **Input**: `multipart/form-data` (file)
--   **Output**: JSON Document
+### Process Document
+`POST /api/v1/process`
 
-**Example Output Structure:**
+**Request**: `multipart/form-data` containing a `file`.
+
+**Response Excerpt**:
 ```json
 {
-  "document_id": "...",
-  "text_content": { "full_text": "..." },
+  "document_id": "8f2a...",
+  "text_content": { "full_text": "Sample text..." },
   "layout": { "blocks": [ ... ] },
   "tables": [ ... ],
-  "entities": { ... },
-  "processing_metadata": { "processed_offline": true }
+  "entities": {
+    "dates": ["2024-05-20"],
+    "emails": ["info@company.com"]
+  },
+  "processing_metadata": {
+    "runtime_ms": 452.3,
+    "ocr_engine": "tesseract"
+  }
 }
 ```
 
-## 🛠 Tuning & Customization
+---
 
--   **Skew Correction**: In `app/services/preprocessing.py`. Adjust the angle threshold in `correct_skew`.
--   **Table Detection**: In `app/services/layout_engine.py`. Adjust the `kernel` size (`(25, 1)`) to detect shorter or longer lines.
--   **OCR Config**: In `app/services/ocr_service.py`. Modify `psm` (Page Segmentation Mode) if your documents are complex (e.g., specific columns).
+## �️ Security & Privacy Statement
 
-## 🔒 Security & Privacy
+VaultOCR is built for security-sensitive industries (Finance, Healthcare, Legal). 
+- **Zero Cloud Footprint**: Data never touches a third-party server.
+- **In-Memory Operations**: Files are processed in RAM and never persisted to disk unless explicitly configured.
+- **Audit Ready**: Simple codebase, easy to audit for security compliance.
 
--   **Zero External Calls**: The codebase contains NO network calls to external APIs.
--   **Local Processing**: All memory operations happen within the Python process.
--   **No Persistence**: Uploaded files are processed in-memory (using `tempfile` SpooledTemporaryFile via FastAPI) and discarded.
+---
+
+## 🤝 Contributing & License
+
+Contributions are welcome! Please feel free to submit a Pull Request. Distributed under the **MIT License**.
+
+---
+
+*Built with ❤️ for the Open Source Privacy community.*
